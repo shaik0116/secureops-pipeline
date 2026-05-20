@@ -40,6 +40,14 @@ jobs:
       - name: Run Bandit SAST scan
         run: bandit -r app/ -f json -o bandit-results.json || true
 
+      - name: Print Bandit findings summary
+        run: |
+          echo "=========================================="
+          echo "        SAST SCAN RESULTS (Bandit)"
+          echo "=========================================="
+          bandit -r app/ -f text || true
+          echo "=========================================="
+
       - name: Upload SAST results
         uses: actions/upload-artifact@v4
         with:
@@ -56,6 +64,24 @@ jobs:
 
       - name: Run secrets scan
         run: detect-secrets scan --all-files > secrets-results.json || true
+
+      - name: Print secrets summary
+        run: |
+          echo "=========================================="
+          echo "        SECRETS SCAN RESULTS"
+          echo "=========================================="
+          python3 -c "
+          import json
+          with open('secrets-results.json') as f:
+              data = json.load(f)
+          results = data.get('results', {})
+          total = sum(len(v) for v in results.values())
+          print(f'Total potential secrets found: {total}')
+          for filename, secrets in results.items():
+              for s in secrets:
+                  print(f'  [{s[\"type\"]}] in {filename} line {s[\"line_number\"]}')
+          " || true
+          echo "=========================================="
 
       - uses: actions/upload-artifact@v4
         with:
