@@ -45,7 +45,7 @@ jobs:
           echo "=========================================="
           echo "        SAST SCAN RESULTS (Bandit)"
           echo "=========================================="
-          bandit -r app/ -f text || true
+          bandit -r app/ -f txt || true
           echo "=========================================="
 
       - name: Upload SAST results
