@@ -1,0 +1,102 @@
+name: SecureOps Security Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.12"
+  IMAGE_NAME: secureops-api
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+  sast:
+    name: SAST - Bandit Code Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Bandit SAST scan
+        run: bandit -r app/ -f json -o bandit-results.json || true
+
+      - name: Upload SAST results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-sast-results
+          path: bandit-results.json
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install detect-secrets
+        run: pip install detect-secrets
+
+      - name: Run secrets scan
+        run: detect-secrets scan --all-files > secrets-results.json || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: secrets-scan-results
+          path: secrets-results.json
+
+  iac-scan:
+    name: IaC Scan - Checkov
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Checkov
+        run: pip install checkov
+
+      - name: Run Checkov IaC scan
+        run: checkov -d terraform/ --output json --output-file-path . || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: checkov-iac-results
+          path: results_json.json
+
+  container-scan:
+    name: Container Scan - Trivy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t secureops-api:test .
+
+      - name: Run Trivy container scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: secureops-api:test
+          format: json
+          output: trivy-results.json
+          exit-code: "0"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trivy-container-results
+          path: trivy-results.json
