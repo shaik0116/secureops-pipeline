@@ -23,6 +23,10 @@ checkov-results.json
 trivy-results.json
 sca-results.json
 
+# Personal study notes — not part of the project
+learning.md
+terraform.md
+
 # OS files
 .DS_Store
 Thumbs.db
