@@ -51,11 +51,14 @@ Write a clear, concise 3-paragraph summary:
 Scan Results:
 {findings_text}"""
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
-    )
-    return response.text
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
+        return response.text
+    except Exception as e:
+        return f"AI summary unavailable: {str(e)[:200]}"
 
 
 if __name__ == "__main__":
