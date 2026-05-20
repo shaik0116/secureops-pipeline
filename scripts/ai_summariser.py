@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-import google.generativeai as genai
+from google import genai
 def load_scan_results(filepath: str) -> dict:
     if not os.path.exists(filepath):
         return {"error": f"File not found: {filepath}"}
@@ -39,8 +39,7 @@ def generate_ai_summary(findings_text: str) -> str:
     if not api_key:
         return "GEMINI_API_KEY not set — skipping AI summary"
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    client = genai.Client(api_key=api_key)
 
     prompt = f"""You are a senior cloud security engineer writing a risk report for a non-technical manager.
 Below are automated security scan results from a DevSecOps pipeline.
@@ -52,7 +51,10 @@ Write a clear, concise 3-paragraph summary:
 Scan Results:
 {findings_text}"""
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
     return response.text
 
 

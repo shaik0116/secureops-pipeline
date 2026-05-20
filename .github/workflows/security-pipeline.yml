@@ -113,7 +113,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: pip install google-generativeai
+        run: pip install google-genai
 
       - name: Download all scan artifacts
         uses: actions/download-artifact@v4
