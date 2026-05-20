@@ -24,6 +24,8 @@ def hash_password_insecure(password: str) -> str:
 def get_user_insecure(username: str):
     conn = sqlite3.connect(":memory:")
     cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER, username TEXT)")
+    cursor.execute("INSERT INTO users VALUES (1, 'admin')")
     query = f"SELECT * FROM users WHERE username = '{username}'"  # noqa: S608
     cursor.execute(query)
     return cursor.fetchone()
