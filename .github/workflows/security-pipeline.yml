@@ -131,6 +131,14 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python scripts/ai_summariser.py
 
+      - name: Print AI summary to log
+        run: |
+          echo "=========================================="
+          echo "       AI SECURITY RISK SUMMARY"
+          echo "=========================================="
+          cat ai-risk-summary.txt
+          echo "=========================================="
+
       - name: Upload AI summary
         uses: actions/upload-artifact@v4
         with:
